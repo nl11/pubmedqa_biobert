@@ -28,12 +28,12 @@ This repository contains the implementation of our project for the **Deep Learni
 | Yes | 0.72 | 0.77 | **0.74** | 103 |
 | No | 0.62 | 0.74 | **0.68** | 72 |
 | Maybe | 0.60 | 0.12 | **0.20** | 25 |
-| **Accuracy** | | | **0.675 (67.5
-%)** | 200 |
+| **Accuracy** |  |  |**0.675 (67.5%)** | 200 |
 | **Macro avg** | 0.65 | 0.54 | 0.54 | 200 |
 | **Weighted avg** | 0.67 | 0.68 | 0.65 | 200 |
 
 ---
+
 
 ## 🎯 Task Description
 
