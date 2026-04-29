@@ -111,4 +111,12 @@ Given a biomedical question and a PubMed abstract, the model predicts one of thr
 - 36% of "maybe" examples confused with "no"
 
 ---
+2. Install dependencies
+```
+pip install -r requirements.txt
+```
 
+3. Run the notebook
+```
+jupyter notebook BioBERT_PubMedQA.ipynb
+```
