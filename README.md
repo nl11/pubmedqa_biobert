@@ -118,5 +118,5 @@ pip install -r requirements.txt
 
 3. Run the notebook
 ```
-jupyter notebook BioBERT_PubMedQA.ipynb
+jupyter notebook pubmedqa_biobert.ipynb
 ```
