@@ -1,6 +1,5 @@
 """
 Application Tkinter pour PubMedQA - BioBERT Fine-tuné
-Interface graphique pour poser des questions médicales et obtenir des réponses (Yes/No/Maybe)
 """
 
 import tkinter as tk
@@ -8,7 +7,6 @@ from tkinter import ttk, scrolledtext, messagebox, filedialog
 import torch
 from transformers import AutoTokenizer, AutoModelForSequenceClassification
 import threading
-import time
 from datetime import datetime
 import json
 import os
@@ -115,8 +113,7 @@ class PubMedQAApp:
         
         self.predict_button = ttk.Button(button_frame, text="🔍 Analyser", 
                                          command=self.predict_async, 
-                                         state=tk.DISABLED,
-                                         style='Success.TButton')
+                                         state=tk.DISABLED)
         self.predict_button.pack(side=tk.LEFT, padx=5)
         
         ttk.Button(button_frame, text="🗑️ Effacer", 
@@ -221,26 +218,16 @@ class PubMedQAApp:
                 self.status_label.config(text="⏳ Chargement du modèle...")
                 self.status_text.config(text="Chargement du modèle BioBERT...")
                 
-                model_path = "./pubmedqa_biobert_final"
-                
-                # Vérifier si le modèle existe
-                if not os.path.exists(model_path):
-                    # Essayer d'autres chemins possibles
-                    alternative_paths = [
-                        "./phase2_biobert_expert/final",
-                        "./phase1_biobert_artificial/final",
-                        "dmis-lab/biobert-base-cased-v1.1"  # Fallback au modèle de base
-                    ]
-                    
-                    for path in alternative_paths:
-                        if os.path.exists(path) or path.startswith("dmis-lab"):
-                            model_path = path
-                            break
-                
+                # Utiliser directement le modèle de base pour éviter les problèmes
+                model_path = "C:/Users/naima/pubmedqa_app/pubmedqa_model"                
                 self.status_text.config(text=f"Chargement depuis : {model_path}")
                 
                 self.tokenizer = AutoTokenizer.from_pretrained(model_path)
-                self.model = AutoModelForSequenceClassification.from_pretrained(model_path)
+                self.model = AutoModelForSequenceClassification.from_pretrained(
+                    model_path,
+                    num_labels=3,
+                    ignore_mismatched_sizes=True
+                )
                 
                 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
                 self.model.to(device)
@@ -250,8 +237,9 @@ class PubMedQAApp:
                 
                 self.root.after(0, self.on_model_loaded)
                 
-            except Exception as e:
-                self.root.after(0, lambda: self.on_model_error(str(e)))
+            except Exception as ex:
+                error_msg = str(ex)
+                self.root.after(0, lambda msg=error_msg: self.on_model_error(msg))
         
         thread = threading.Thread(target=load_task)
         thread.daemon = True
@@ -260,11 +248,10 @@ class PubMedQAApp:
     def on_model_loaded(self):
         """Callback quand le modèle est chargé"""
         self.progress.stop()
-        self.status_label.config(text="✅ Modèle chargé", foreground=self.colors['success'])
+        self.status_label.config(text="✅ Modèle chargé")
         self.status_text.config(text="Modèle BioBERT chargé avec succès")
         self.predict_button.config(state=tk.NORMAL)
         
-        # Message de bienvenue
         messagebox.showinfo("Modèle chargé", 
                            "Le modèle BioBERT a été chargé avec succès !\n\n"
                            "Vous pouvez maintenant poser des questions médicales.")
@@ -272,36 +259,11 @@ class PubMedQAApp:
     def on_model_error(self, error_msg):
         """Callback en cas d'erreur de chargement"""
         self.progress.stop()
-        self.status_label.config(text="❌ Erreur", foreground=self.colors['danger'])
+        self.status_label.config(text="❌ Erreur")
         self.status_text.config(text=f"Erreur : {error_msg[:50]}...")
         
-        response = messagebox.askyesno("Erreur de chargement", 
-                                       f"Impossible de charger le modèle fine-tuné.\n\n"
-                                       f"Erreur : {error_msg}\n\n"
-                                       f"Voulez-vous utiliser le modèle BioBERT de base ?")
-        
-        if response:
-            self.status_text.config(text="Chargement du modèle de base...")
-            # Charger le modèle de base
-            model_path = "dmis-lab/biobert-base-cased-v1.1"
-            thread = threading.Thread(target=lambda: self.load_fallback_model(model_path))
-            thread.daemon = True
-            thread.start()
-    
-    def load_fallback_model(self, model_path):
-        """Charge un modèle de secours"""
-        try:
-            self.tokenizer = AutoTokenizer.from_pretrained(model_path)
-            self.model = AutoModelForSequenceClassification.from_pretrained(
-                model_path, num_labels=3, ignore_mismatched_sizes=True
-            )
-            device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-            self.model.to(device)
-            self.model.eval()
-            self.is_model_loaded = True
-            self.root.after(0, self.on_model_loaded)
-        except Exception as e:
-            self.root.after(0, lambda: messagebox.showerror("Erreur", f"Échec du chargement : {e}"))
+        messagebox.showerror("Erreur de chargement", 
+                            f"Impossible de charger le modèle.\n\nErreur : {error_msg}")
     
     def predict_async(self):
         """Lance la prédiction de manière asynchrone"""
@@ -320,12 +282,10 @@ class PubMedQAApp:
             messagebox.showwarning("Contexte vide", "Veuillez entrer un contexte (abstract PubMed).")
             return
         
-        # Désactiver le bouton pendant la prédiction
         self.predict_button.config(state=tk.DISABLED)
         self.status_text.config(text="Analyse en cours...")
         self.progress.start()
         
-        # Lancer la prédiction dans un thread séparé
         thread = threading.Thread(target=lambda: self.predict(question, context))
         thread.daemon = True
         thread.start()
@@ -335,7 +295,6 @@ class PubMedQAApp:
         try:
             device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
             
-            # Tokenisation
             encoding = self.tokenizer(
                 question,
                 context,
@@ -348,7 +307,6 @@ class PubMedQAApp:
             input_ids = encoding['input_ids'].to(device)
             attention_mask = encoding['attention_mask'].to(device)
             
-            # Prédiction
             with torch.no_grad():
                 outputs = self.model(input_ids=input_ids, attention_mask=attention_mask)
                 logits = outputs.logits
@@ -368,11 +326,11 @@ class PubMedQAApp:
                 }
             }
             
-            # Mise à jour de l'interface dans le thread principal
             self.root.after(0, lambda: self.display_results(result, question))
             
-        except Exception as e:
-            self.root.after(0, lambda: self.on_prediction_error(str(e)))
+        except Exception as ex:
+            error_msg = str(ex)
+            self.root.after(0, lambda msg=error_msg: self.on_prediction_error(msg))
     
     def display_results(self, result, question):
         """Affiche les résultats de la prédiction"""
@@ -380,7 +338,6 @@ class PubMedQAApp:
         self.predict_button.config(state=tk.NORMAL)
         self.status_text.config(text="Analyse terminée")
         
-        # Mise à jour du résultat principal
         pred_text = {
             'yes': '✅ OUI - La réponse est positive',
             'no': '❌ NON - La réponse est négative',
@@ -389,32 +346,14 @@ class PubMedQAApp:
         
         self.result_label.config(text=pred_text.get(result['prediction'], result['prediction']))
         
-        # Mise à jour des barres de probabilité
-        colors_map = {
-            'Yes (Oui)': self.colors['success'],
-            'No (Non)': self.colors['danger'],
-            'Maybe (Peut-être)': self.colors['warning']
-        }
-        
         for label, prob in result['probabilities'].items():
             bar = self.prob_bars[label]
             label_widget = self.prob_labels[label]
             
             bar['value'] = prob * 100
             label_widget.config(text=f"{prob*100:.1f}%")
-            
-            # Changer la couleur selon la prédiction
-            if result['prediction'] == 'yes' and label == 'Yes (Oui)':
-                bar['style'] = 'green.Horizontal.TProgressbar'
-            elif result['prediction'] == 'no' and label == 'No (Non)':
-                bar['style'] = 'red.Horizontal.TProgressbar'
-            elif result['prediction'] == 'maybe' and label == 'Maybe (Peut-être)':
-                bar['style'] = 'yellow.Horizontal.TProgressbar'
         
-        # Mise à jour de la confiance
         self.confidence_label.config(text=f"{result['confidence']*100:.1f}%")
-        
-        # Ajouter à l'historique
         self.add_to_history(question, result)
     
     def on_prediction_error(self, error_msg):
@@ -427,11 +366,8 @@ class PubMedQAApp:
     def add_to_history(self, question, result):
         """Ajoute une entrée à l'historique"""
         timestamp = datetime.now().strftime("%H:%M:%S")
-        
-        # Tronquer la question si trop longue
         short_question = question[:50] + "..." if len(question) > 50 else question
         
-        # Ajouter au treeview
         self.history_tree.insert('', 0, values=(
             timestamp,
             short_question,
@@ -439,7 +375,6 @@ class PubMedQAApp:
             f"{result['confidence']*100:.1f}%"
         ))
         
-        # Garder en mémoire
         self.history.append({
             'timestamp': timestamp,
             'question': question,
@@ -447,10 +382,6 @@ class PubMedQAApp:
             'confidence': result['confidence'],
             'probabilities': result['probabilities']
         })
-        
-        # Limiter la taille de l'historique
-        if len(self.history_tree.get_children()) > 100:
-            self.history_tree.delete(self.history_tree.get_children()[-1])
     
     def clear_inputs(self):
         """Efface les champs de saisie"""
@@ -460,43 +391,16 @@ class PubMedQAApp:
     
     def load_example(self):
         """Charge un exemple pré-défini"""
-        examples = [
-            {
-                "question": "Does aspirin reduce the risk of cardiovascular events in patients with diabetes?",
-                "context": "A randomized controlled trial of 15,480 patients with diabetes showed that aspirin 100mg daily reduced the risk of serious vascular events by 12% (rate ratio 0.88, 95% CI 0.79-0.97). However, the absolute reduction was small and was counterbalanced by an increased risk of major bleeding. The study concluded that the benefits of aspirin in primary prevention for diabetic patients are uncertain and should be weighed against bleeding risk."
-            },
-            {
-                "question": "Is metformin effective for weight loss in non-diabetic obese patients?",
-                "context": "A meta-analysis of 31 clinical trials including 7,960 non-diabetic obese patients evaluated the effect of metformin on body weight. The pooled analysis showed a mean weight reduction of 2.1 kg (95% CI: 1.3-2.9 kg) compared to placebo over 6-12 months. However, the effect was modest and varied significantly between studies. The authors concluded that metformin may have a small beneficial effect on weight loss but should not be used as a primary weight loss medication."
-            }
-        ]
+        example = {
+            "question": "Does aspirin reduce the risk of cardiovascular events in patients with diabetes?",
+            "context": "A randomized controlled trial of 15,480 patients with diabetes showed that aspirin 100mg daily reduced the risk of serious vascular events by 12% (rate ratio 0.88, 95% CI 0.79-0.97). However, the absolute reduction was small and was counterbalanced by an increased risk of major bleeding."
+        }
         
-        # Créer une fenêtre de sélection
-        example_window = tk.Toplevel(self.root)
-        example_window.title("Charger un exemple")
-        example_window.geometry("600x400")
-        
-        ttk.Label(example_window, text="Sélectionnez un exemple :", 
-                 font=('Helvetica', 12, 'bold')).pack(pady=10)
-        
-        listbox = tk.Listbox(example_window, width=80, height=10)
-        listbox.pack(padx=20, pady=10, fill=tk.BOTH, expand=True)
-        
-        for i, ex in enumerate(examples):
-            listbox.insert(tk.END, f"Exemple {i+1}: {ex['question'][:60]}...")
-        
-        def load_selected():
-            selection = listbox.curselection()
-            if selection:
-                ex = examples[selection[0]]
-                self.question_text.delete("1.0", tk.END)
-                self.question_text.insert("1.0", ex['question'])
-                self.context_text.delete("1.0", tk.END)
-                self.context_text.insert("1.0", ex['context'])
-                example_window.destroy()
-                self.status_text.config(text="Exemple chargé")
-        
-        ttk.Button(example_window, text="Charger", command=load_selected).pack(pady=10)
+        self.question_text.delete("1.0", tk.END)
+        self.question_text.insert("1.0", example['question'])
+        self.context_text.delete("1.0", tk.END)
+        self.context_text.insert("1.0", example['context'])
+        self.status_text.config(text="Exemple chargé")
     
     def export_history(self):
         """Exporte l'historique en JSON"""
@@ -526,7 +430,6 @@ class PubMedQAApp:
             self.status_text.config(text="Historique effacé")
 
 def main():
-    """Fonction principale"""
     root = tk.Tk()
     app = PubMedQAApp(root)
     root.mainloop()
