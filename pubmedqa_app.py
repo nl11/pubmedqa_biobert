@@ -219,7 +219,7 @@ class PubMedQAApp:
                 self.status_text.config(text="Chargement du modèle BioBERT...")
                 
                 # Utiliser directement le modèle de base pour éviter les problèmes
-                model_path = "C:/Users/naima/pubmedqa_app/pubmedqa_model"                
+                model_path = "   "                
                 self.status_text.config(text=f"Chargement depuis : {model_path}")
                 
                 self.tokenizer = AutoTokenizer.from_pretrained(model_path)
