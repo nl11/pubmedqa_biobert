@@ -2,7 +2,7 @@
 
 [![Python 3.10](https://img.shields.io/badge/Python-3.10-blue.svg)](https://www.python.org/)
 [![PyTorch](https://img.shields.io/badge/PyTorch-2.1.0-red.svg)](https://pytorch.org/)
-[![Transformers](https://img.shields.io/badge/🤗-Transformers-4.35.0-ffcc00.svg)](https://huggingface.co/docs/transformers/)
+[![Transformers](https://img.shields.io/badge/🤗-Transformers-ffcc00.svg)](https://huggingface.co/docs/transformers/)
 [![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 
 > **Ternary classification of medical question-answering (yes/no/maybe) on PubMedQA using PubMedBERT with two-phase fine-tuning.**
@@ -49,9 +49,9 @@ This project implements a **PubMedBERT-based** solution for the PubMedQA benchma
 
 Given a biomedical question and a PubMed abstract, the model predicts one of three answers:
 
-- ✅ **yes** — The abstract confirms the question with sufficient evidence
-- ❌ **no** — The abstract rejects the question or indicates no effect
-- 🤔 **maybe** — Evidence is contradictory or insufficient
+- **yes** — The abstract confirms the question with sufficient evidence
+- **no** — The abstract rejects the question or indicates no effect
+- **maybe** — Evidence is contradictory or insufficient
 
 **Example:**
 > *Question:* "Does vitamin D supplementation reduce mortality in older adults?"  
@@ -60,7 +60,7 @@ Given a biomedical question and a PubMed abstract, the model predicts one of thr
 
 ---
 
-## 📊 Dataset (PubMedQA)
+##  Dataset (PubMedQA)
 
 | Subset | Size | Labels | Usage |
 |--------|------|--------|-------|
@@ -79,7 +79,7 @@ Given a biomedical question and a PubMed abstract, the model predicts one of thr
 
 ---
 
-## 🏗️ Methodology
+##  Methodology
 
 ### Model Architecture
 
@@ -256,7 +256,7 @@ Context: RCT, N=2158, HR=0.72 (95% CI: 0.59-0.88)
 
 **Output:**
 ```
-✅ YES - Positive answer
+YES - Positive answer
 Confidence: 96.2%
 Probabilities: Yes: 96.2%, No: 2.1%, Maybe: 1.7%
 ```
