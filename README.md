@@ -120,3 +120,149 @@ pip install -r requirements.txt
 ```
 jupyter notebook pubmedqa_biobert.ipynb
 ```
+Voici comment compléter votre README.md avec les instructions pour faire fonctionner l'application Tkinter :
+
+## 🚀 Installation et Exécution
+
+### Prérequis
+
+- **Python 3.8 ou supérieur**
+- **CUDA** (optionnel, pour accélération GPU)
+- **8 Go de RAM minimum** (16 Go recommandés)
+- **Espace disque** : ~1.5 Go pour le modèle BioBERT
+
+### Installation
+
+1. **Cloner le dépôt**
+```bash
+git clone https://github.com/yourusername/biobert-pubmedqa.git
+cd biobert-pubmedqa
+```
+
+2. **Créer un environnement virtuel (recommandé)**
+```bash
+# Avec venv
+python -m venv venv
+
+# Activer l'environnement
+# Sur Windows
+venv\Scripts\activate
+# Sur Linux/Mac
+source venv/bin/activate
+```
+
+3. **Installer les dépendances**
+```bash
+pip install -r requirements.txt
+```
+
+4. **Télécharger le modèle BioBERT fine-tuné**
+5. 
+```bash
+# Exécutez le notebook d'entraînement
+jupyter notebook pubmedqa_biobert.ipynb
+```
+
+### 📱 Lancer l'Application GUI
+
+```bash
+python app.py
+```
+
+L'interface graphique s'ouvrira automatiquement avec :
+- Une fenêtre de 1200x800 pixels
+- Le modèle BioBERT se charge en arrière-plan (indicateur de progression)
+- Une barre de statut indique "Prêt" quand le modèle est chargé
+
+### Utilisation de l'Application
+
+1. **Saisir une question médicale** dans le champ "Question médicale"
+2. **Ajouter le contexte** (abstract PubMed) dans le champ correspondant
+3. **Cliquer sur "Analyser"** pour obtenir la prédiction
+4. **Résultats affichés :**
+   - Réponse principale (YES/NO/MAYBE)
+   - Probabilités détaillées par classe
+   - Niveau de confiance (0-100%)
+
+### Fonctionnalités
+
+| Fonction | Description |
+|----------|-------------|
+| 🔍 **Analyse** | Prédiction basée sur BioBERT |
+| 📁 **Charger exemple** | Exemple pré-défini pour tester |
+| 🗑️ **Effacer** | Réinitialiser les champs |
+| 📜 **Historique** | Conservation des 100 dernières requêtes |
+| 📤 **Exporter** | Sauvegarde en JSON |
+| 🎨 **Interface moderne** | Design responsive avec Tkinter |
+
+### Exemple d'Utilisation
+
+**Entrée :**
+```
+Question : Does aspirin reduce cardiovascular events in diabetic patients?
+Contexte : A randomized controlled trial of 15,480 patients with diabetes 
+showed that aspirin 100mg daily reduced the risk of serious vascular events 
+by 12% (rate ratio 0.88, 95% CI 0.79-0.97). However, the absolute reduction 
+was small and was counterbalanced by an increased risk of major bleeding.
+```
+
+**Sortie attendue :**
+```
+✅ YES - La réponse est positive
+Confiance : 78.3%
+Probabilités : Yes: 78.3%, No: 15.2%, Maybe: 6.5%
+```
+
+### 🐛 Dépannage
+
+**Problème : "ModuleNotFoundError: No module named 'torch'"**
+```bash
+pip install torch --index-url https://download.pytorch.org/whl/cpu
+```
+
+**Problème : Mémoire insuffisante**
+- Réduire la longueur des textes (max 512 tokens)
+- Utiliser le mode CPU seulement
+```python
+# Dans app.py, modifier :
+device = torch.device('cpu')
+```
+
+**Problème : L'application ne répond pas**
+- Attendre le chargement complet du modèle (~30 secondes)
+- Vérifier l'espace disque disponible
+
+**Problème : Le modèle ne se charge pas**
+- Vérifier le chemin dans `model_path` (ligne ~173)
+- Télécharger manuellement les fichiers modèle
+
+### 📊 Architecture du Projet
+
+```
+biobert-pubmedqa/
+├── app.py                  # Application Tkinter
+├── pubmedqa_biobert.ipynb  # Notebook d'entraînement
+├── requirements.txt        # Dépendances Python
+├── README.md              # Documentation
+├── pubmedqa_model/           # Modèle BioBERT fine-tuné
+│   ├── config.json
+│   ├── pytorch_model.bin
+│   ├── tokenizer_config.json
+│   └── vocab.txt
+└── exports/               # Historique exporté (créé automatiquement)
+    └── history_*.json
+```
+
+
+###  Personnalisation
+
+```python
+
+# Changer le modèle par défaut
+model_path = "votre/chemin/vers/le_modele"
+```
+
+---
+
+**Dernière mise à jour :** avril 2026  
+**Version :** 1.0.0
