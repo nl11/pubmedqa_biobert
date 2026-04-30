@@ -9,7 +9,7 @@
 
 ---
 
-## 📋 Overview
+## Overview
 
 This project implements a **PubMedBERT-based** solution for the PubMedQA benchmark. We propose a two-phase training strategy with four key improvements:
 
@@ -45,7 +45,7 @@ This project implements a **PubMedBERT-based** solution for the PubMedQA benchma
 
 ---
 
-## 🎯 Task Description
+##  Task Description
 
 Given a biomedical question and a PubMed abstract, the model predicts one of three answers:
 
